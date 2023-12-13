@@ -1,40 +1,46 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { FiMapPin } from "react-icons/fi";
 import { MdOutlineEmail } from "react-icons/md";
 
 import emailjs from "@emailjs/browser";
 import toast from "react-hot-toast";
 import { FaLinkedin } from "react-icons/fa";
+
 const ContactMe = () => {
   const form = useRef();
+  const [loading, setLoading] = useState(false);
 
-  const sendEmail = (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    emailjs
-      .sendForm(
+    const loadingToast = toast.loading("Sending email...");
+
+    try {
+      const result = await emailjs.sendForm(
         "service_2cyio7g",
         "template_8dql5oc",
         form.current,
         "SxdwSk86UnEdRmFda"
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          toast.success("Successfully toasted!");
-        },
-        (error) => {
-          console.log(error.text);
-        }
       );
+
+      console.log(result.text);
+      toast.success("Successfully sent email!", { id: loadingToast });
+    } catch (error) {
+      console.log(error.text);
+      toast.error("Error sending email", { id: loadingToast });
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div id="Contact_me" className="py-3">
       <h2 className="my-8 text-3xl font-semibold text-center underline underline-offset-8">
         Contact me
       </h2>
       <div className="flex flex-col lg:flex-row">
-        <div className="flex-1  px-5 md:px-16">
+        <div className="flex-1 px-5 md:px-16">
           <h2 className="text-lg font-semibold">Get in Touch</h2>
           <p>
             Have something to say? I am here to help. Fill up the form or send
@@ -87,11 +93,15 @@ const ContactMe = () => {
             className="textarea textarea-bordered w-full mt-4"
             placeholder="message..."
           ></textarea>
-          <input
-            className="bg-[#048970] text-white font-semibold py-2 px-6 rounded-lg"
+          <button
+            className={`bg-[#048970] text-white font-semibold py-2 px-6 rounded-lg ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             type="submit"
-            value="Send Message"
-          />
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send Message"}
+          </button>
         </form>
       </div>
     </div>
